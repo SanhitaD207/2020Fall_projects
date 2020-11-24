@@ -23,6 +23,8 @@ class NYCMotorVehicleCollisions:
 
 
     def night_crashes_analysis(self):
+        # TODO - Hypothesis : Of all collisions occurring late in the night (between 12 am - 5 am), the majority are caused due to overspeeding.
+
         print('Crashes df shape ', self.crashes)
         time_data = self.crashes['CRASH TIME']
         print(time_data)
@@ -36,9 +38,21 @@ class NYCMotorVehicleCollisions:
 
 
     def gender_stereotype_analysis(self):
+        # TODO - Hypothesis : Is the gender stereotype about driving justified? Is the female gender involved in more accidents than the male gender?
+        # TODO - population data needed for each gender
         crashes_persons = pd.merge(self.crashes, self.persons, left_on='COLLISION_ID', right_on='COLLISION_ID', how='inner')
         crashes_persons.loc[:, 'CRASH_YEAR'] = crashes_persons['CRASH_DATE'].astype(np.str_).apply(lambda x: x.split('/')[-1])
         crashes_persons[crashes_persons['CRASH_YEAR'] == '2019']['PERSON_SEX'].value_counts()
+
+
+    def crash_location_analysis(self):
+        # TODO - Hypothesis : Crash locations are not random. The collisions are bound to specific areas due to a badly planned network of roads/traffic signs.
+        pass
+
+
+    def crashes_with_population_analysis(self):
+        # TODO - Hypothesis : The number of collisions increased with an increase in population
+        pass
 
 
 collision_data = NYCMotorVehicleCollisions()
