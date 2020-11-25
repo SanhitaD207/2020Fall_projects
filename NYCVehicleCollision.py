@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from datetime import datetime, time
 
@@ -37,12 +36,9 @@ class NYCMotorVehicleCollisions:
         print(night_crashes_analysis)
 
 
-    def gender_stereotype_analysis(self):
-        # TODO - Hypothesis : Is the gender stereotype about driving justified? Is the female gender involved in more accidents than the male gender?
-        # TODO - population data needed for each gender
-        crashes_persons = pd.merge(self.crashes, self.persons, left_on='COLLISION_ID', right_on='COLLISION_ID', how='inner')
-        crashes_persons.loc[:, 'CRASH_YEAR'] = crashes_persons['CRASH_DATE'].astype(np.str_).apply(lambda x: x.split('/')[-1])
-        crashes_persons[crashes_persons['CRASH_YEAR'] == '2019']['PERSON_SEX'].value_counts()
+    def crashes_age_analysis(self):
+        # TODO - Hypothesis : Of all crashes, a majority number is caused by persons between the age of 16-25
+        pass
 
 
     def crash_location_analysis(self):
