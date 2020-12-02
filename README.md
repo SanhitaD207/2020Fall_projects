@@ -2,20 +2,33 @@
 
 ##Introduction
 
+The NYC open data initiative provides a vast number of data sources for analyses. New York City is densely populated with a huge local as well as tourist populations. A substantial portion of this population also owns motor vehicles of different kinds. There are a large number of motor vehicle collisions that are reported and we decided to analyze different causes and metrics around these collisions data.
+
+The dataset contains the details about the crashes reported in NYC from 2012-2020. 
+
 ##Hypotheses
 
+We came up with a few scenarios that we wanted to verify with the help of the data:
+
 ####Hypothesis - I
-Of all collisions occurring late in the night (between 12 am - 5 am), the majority are caused due to overspeeding.
+During the night time (12 am - 5 am) the streets are usually empty and some of the traffic lights are also turned off. Also, there are lesser pedestrians around. So it could be possible that majority of the collisions occurring at night are caused because people driving at night tend to over-speed.
+##### Results
+
 
 ####Hypothesis - II
-Of all crashes, a majority number is caused by persons between the age of 16-25.
+Of all crashes, a majority number is caused by persons between the age of 16-25 because they are relatively inexperienced.
+
+##### Results
 
 ####Hypothesis - III
-The number of collisions increased with an increase in population
+The number of collisions increased with an increase in population density because more people will be driving on the roads.
+
+##### Results
 
 ####Hypothesis - IV
 Crash locations are not random. The collisions are bound to specific areas due to a badly planned network of roads/traffic signs.
 
+##### Results
 
 ##Data Sources
 
