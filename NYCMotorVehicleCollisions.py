@@ -1,30 +1,44 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Team Members - Adarsh Agarwal (adarsha2), Sanhita Dhamdhere (sanhita2)
+# Team Members:
+# Adarsh Agarwal (adarsha2@illinois.edu, github - agarwaladarsh)
+# Sanhita Dhamdhere (sanhita2@illinois.edu, github - Sanhita207)
 
 # References:
-# - https://www.kite.com/python/answers/how-to-select-rows-by-multiple-label-conditions-with-pandas-loc-in-python
-# - https://stackoverflow.com/questions/50375985/pandas-add-column-with-value-based-on-condition-based-on-other-columns
-# - https://stackoverflow.com/questions/19384532/get-statistics-for-each-group-such-as-count-mean-etc-using-pandas-groupby
-# - https://stackoverflow.com/questions/44111307/python-pandas-count-rows-based-on-column
-# - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.astype.html
-# - https://datatofish.com/line-chart-python-matplotlib/
-# - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_values.html
-# - https://github.com/rahulrohri/final_project_2020Sp
-# - https://studio.mapbox.com/
-# - https://plotly.com/python/scattermapbox/
+
+# _Stack Overflow_ :
+#    - https://stackoverflow.com/questions/50375985/pandas-add-column-with-value-based-on-condition-based-on-other-columns
+#    - https://stackoverflow.com/questions/19384532/get-statistics-for-each-group-such-as-count-mean-etc-using-pandas-groupby
+#    - https://stackoverflow.com/questions/44111307/python-pandas-count-rows-based-on-column
+#    - https://stackoverflow.com/questions/47502891/removing-group-header-after-pandas-aggregation
+#    - https://stackoverflow.com/questions/14529838/apply-multiple-functions-to-multiple-groupby-columns
+
+# _Others_ :
+#    - https://www.kite.com/python/answers/how-to-select-rows-by-multiple-label-conditions-with-pandas-loc-in-python
+#    - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.astype.html
+#    - https://datatofish.com/line-chart-python-matplotlib/
+#    - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_values.html
+#    - https://github.com/rahulrohri/final_project_2020Sp
+#    - https://studio.mapbox.com/
+#    - https://plotly.com/python/scattermapbox/
+#    - https://data.beta.nyc/dataset/nyc-zip-code-tabulation-areas/resource/6df127b1-6d04-4bb7-b983-07402a2c3f90
+#    - https://plotly.com/python/mapbox-county-choropleth/
+#    - https://medium.com/@ingeh/markdown-for-jupyter-notebooks-cheatsheet-386c05aeebed
 
 
 import pandas as pd
 import numpy as np
+import geojson
 from datetime import datetime, time
 import matplotlib.pyplot as plt
-import plotly.graph_objects as go
+import plotly.express as px
 
 
-NYC_collision_crashes_file = "Motor_Vehicle_Collisions_-_Crashes.csv"
-NYC_collision_persons_file = "Motor_Vehicle_Collisions_-_Person.csv"
+NYC_collision_crashes_file = 'Motor_Vehicle_Collisions_-_Crashes.csv'
+NYC_collision_persons_file = 'Motor_Vehicle_Collisions_-_Person.csv'
+Population_by_age_2010 = 'population_by_age_2010.csv'
+Zipcode_geojson = 'zipcode.geojson'
 
 
 def load_collision_data(crashes_file, persons_file):
@@ -169,21 +183,45 @@ def get_crashes_persons_age_grouping_data(crashes_persons, columns):
     return crashes_persons_age_grouping
 
 
-def calculate_percentage_drivers_between_ages_16_25(crashes_persons_age_grouping):
+def get_population_proportion_data(filename):
     """
-    This function is used to calculate the percentage proportion of young drivers involved in collisions,
-        between the ages of 16-25 years. This will provide a metric to the motor traffic department of NYC,
-        to take a deeper look if the value is significantly high.
-
-    :param crashes_persons_age_grouping: Grouped dataframe containing driver information which is flagged
-        for the age group 16-25.
-    :return: Float value signifying the percentage proportion of drivers involved in collisions who are
-        between the ages 16-25.
+    This function is used to fetch the population demographics by age for the year 2010. The 'proportion' field from this
+        data will be used later on to normalize the crashes data for the 2 age groups - 16-25 years and greater than 25
+        years of age.
+    :param filename: Filename / Complete path to the population demographics by age data for NYC (present in repo)
+    :return: dataframe containing population proportion
     """
+    population_by_age_2010 = pd.read_csv(filename)
+    population_by_age_2010.loc[:, 'age16-25'] = np.where((population_by_age_2010['Age'] > 15) &
+                                                         (population_by_age_2010['Age'] < 26), True, False)
+    population_by_age_2010.loc[:, 'proportion'] = population_by_age_2010['Population'] / population_by_age_2010['Population'].sum()
+    return population_by_age_2010
 
-    df = crashes_persons_age_grouping['age16-25'].value_counts().to_frame()
-    pct = df.iloc[1] * 100 / crashes_persons_age_grouping.shape[0]
-    return pct
+
+def get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_above_25):
+    """
+    This function will be used to fetch a grouped dataframe containing normalized number of crashes for age groups
+        16-25 years and above 25 years. The normalization is done using the population proportions obtained from the
+        NYC population demographics by age dataset.
+    :param crashes_persons_age_grouping: Merged crashes and persons dataframe
+    :param pop_prop_16_25: population proportion factor for age group 16-25 years
+    :param pop_prop_above_25: population proportion factor for age group above years
+    :return: grouped dataframe containing normalized number of crashes by age groups
+    """
+    crashes_by_year_age = crashes_persons_age_grouping.groupby(['CRASH_YEAR', 'PERSON_AGE']).size().reset_index()
+    crashes_by_year_age = crashes_by_year_age.rename(columns={0: 'crashes'})
+    crashes_by_year_age.loc[:, 'age_group'] = np.where((crashes_by_year_age['PERSON_AGE'] > 15) &
+                                                       (crashes_by_year_age['PERSON_AGE'] < 26), '16-25', '>25')
+
+    crashes_by_year_age_grouped = crashes_by_year_age.groupby(['CRASH_YEAR', 'age_group']).agg({'crashes': ['sum']}).reset_index()
+    crashes_by_year_age_grouped.columns = crashes_by_year_age_grouped.columns.droplevel(1)
+    crashes_by_year_age_grouped = crashes_by_year_age_grouped.pivot(index='CRASH_YEAR', columns='age_group', values='crashes')
+    crashes_by_year_age_grouped.loc[:, 'norm_16-25'] = crashes_by_year_age_grouped['16-25'] / (
+            (crashes_by_year_age_grouped['16-25'].sum() + crashes_by_year_age_grouped['>25'].sum()) * pop_prop_16_25)
+    crashes_by_year_age_grouped.loc[:, 'norm_>25'] = crashes_by_year_age_grouped['>25'] / (
+            (crashes_by_year_age_grouped['16-25'].sum() + crashes_by_year_age_grouped['>25'].sum()) * pop_prop_above_25)
+
+    return crashes_by_year_age_grouped
 
 
 def get_nyc_population_data():
@@ -275,67 +313,51 @@ def plot_crashes_per_capita_vs_population_density(crashes_population):
     plt.show()
 
 
-def plot_crash_locations(mapbox_access_token, crashes, year, month, borough=''):
+def set_up_crashes_for_map(crashes, geojson_filename):
     """
-    This function is used to plot the crash locations on a map of NYC. This function uses the python-plotly
-        library to plot a Scatter Map Box. A Mapbox access token is required, which can be fetched
+    This function is used to setup the dataframes required to plot a heat map of all crashes in NYC. A geojson file is
+        used and an additional 'id' key is added to allow plotly to link the dataframe and geojson together for the plot.
+    :param crashes: Dataframe containing the crashes data for NYC Motor Vehicle Collisions
+    :param geojson_filename: Filename/complete path to the zipcode.geojson file (present in repo)
+    :return: crashes_per_zipcode dataframe and geojson
+    """
+
+    with open(geojson_filename) as f:
+        gj = geojson.load(f)
+        for feature in gj['features']:
+            zipcode = feature['properties']['postalCode']
+            feature['id'] = zipcode
+
+    crashes_per_zipcode = crashes.groupby(['ZIP CODE'], sort=True).size().reset_index(name='crashes_per_zipcode')
+    crashes_per_zipcode = crashes_per_zipcode.rename(columns={'ZIP CODE': 'zipcode'})
+    crashes_per_zipcode.drop(crashes_per_zipcode[(crashes_per_zipcode['zipcode'].isna()) |
+                                                 (crashes_per_zipcode['zipcode'] == "     ")].index, inplace=True)
+    return crashes_per_zipcode, gj
+
+
+def plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj):
+    """
+    This function is used to plot the heat map of crashes in NYC. This function uses the python-plotly
+        library to plot a Chloropleth Map Box. A Mapbox access token is required, which can be fetched
         very easily from the Mapbox studio site (https://studio.mapbox.com/).
-
-    The plots are on a month level and the year, month and borough values need to be provided. If borough
-        isn't provided then the plot will be for the entire NYC.
-
 
     :param mapbox_access_token: A string token required by the python-plotly library to support interactive
         maps within the plots.
-    :param crashes: Dataframe containing the crashes data for NYC Motor Vehicle Collisions
-    :param year: The year for which data is to be visualized
-    :param month: The month for which data is to be visualized
-    :param borough: The borough for which data is to be visualized
-    :return: Plotly Graph Object Figure containing a Scatter Map Box
+    :param crashes_per_zipcode: Dataframe containing the crashes data for NYC Motor Vehicle Collisions per zipcode
+    :param gj: Geojson containing zipcode level information for NYC
     """
 
-    if not 0 < month < 13:
-        raise Exception('Please provide a valid month number (between 1 and 12)')
-    if year < 2013:
-        raise Exception('Year values above 2013 only')
-
-    if not borough:
-        df = crashes[(crashes['CRASH_YEAR'] == year) &
-                     (crashes['CRASH_MONTH'] == month)]
-    else:
-        df = crashes[(crashes['BOROUGH'] == borough.upper()) & (crashes['CRASH_YEAR'] == year) &
-                     (crashes['CRASH_MONTH'] == month)]
-
-    lat = df['LATITUDE']
-    lon = df['LONGITUDE']
-    df_text = df['CONTRIBUTING FACTOR VEHICLE 1']
-
-    fig = go.Figure(go.Scattermapbox(
-        lat=lat.tolist(),
-        lon=lon.tolist(),
-        mode='markers',
-        marker=go.scattermapbox.Marker(
-            size=5
-        ),
-        text=df_text
-    ))
-
-    fig.update_layout(
-        hovermode='closest',
-        width=960,
-        height=600,
-        mapbox=dict(
-            accesstoken=mapbox_access_token,
-            bearing=0,
-            center=go.layout.mapbox.Center(
-                lat=40.7,
-                lon=-74
-            ),
-            pitch=0,
-            zoom=8
-        )
-    )
-    return fig
+    fig = px.choropleth_mapbox(crashes_per_zipcode, geojson=gj, locations='zipcode', color='Total_Crashes_zipcode',
+                               color_continuous_scale="Viridis",
+                               range_color=(0, 15000),
+                               mapbox_style="carto-positron",
+                               zoom=9, center={"lat": 40.74, "lon": -73.8},
+                               opacity=0.5
+                               )
+    fig.update_layout(mapbox_style="light",
+                      mapbox_accesstoken=mapbox_access_token,
+                      margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.show()
 
 
 mapbox_access_token = 'pk.eyJ1IjoiYWdhcndhbGFkYXJzaCIsImEiOiJja2h5ZGYyd3UwZTN3MnFwYzM1YW9qNnFvIn0.SasVV15822weUxlZ3G0P8Q'
@@ -359,16 +381,25 @@ crashes_persons = get_merged_crashes_persons(crashes, persons)
 
 # dropping all rows where there is no vehicle ID present
 crashes_persons.drop(crashes_persons.loc[crashes_persons['VEHICLE_ID'].isna()].index, inplace=True)
-columns = ['COLLISION_ID', 'VEHICLE_ID', 'PERSON_TYPE', 'POSITION_IN_VEHICLE', 'PERSON_AGE']
+columns = ['CRASH_YEAR', 'PERSON_AGE']
 crashes_persons_age_grouping = get_crashes_persons_age_grouping_data(crashes_persons, columns)
-crashes_persons_age_grouping.loc[:, 'ageBelow16'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] < 16,
-                                                             True, False)
+crashes_persons_age_grouping.loc[:, 'ageBelow16'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] < 16, True, False)
+crashes_persons_age_grouping.loc[:, 'ageAbove99'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] > 99, True, False)
 
-# Since there are only 8528 such rows where the age is below 16, we will be dropping those from the analysis
+# Dropping all rows with age < 16, age > 99 and age Nan
 crashes_persons_age_grouping.drop(
-    crashes_persons_age_grouping.loc[crashes_persons_age_grouping['PERSON_AGE'] < 16].index,
-    inplace=True)
-print(calculate_percentage_drivers_between_ages_16_25(crashes_persons_age_grouping))
+    crashes_persons_age_grouping.loc[(crashes_persons_age_grouping['ageBelow16']) |
+                                     (crashes_persons_age_grouping['ageAbove99']) |
+                                     (crashes_persons_age_grouping['PERSON_AGE'].isna())].index, inplace=True)
+
+# Using the 2010 population by age demographics of NYC for getting the population proportions by age
+population_by_age_2010 = get_population_proportion_data(Population_by_age_2010)
+
+# Proportion of population for the age group 16-25
+pop_prop_16_25 = population_by_age_2010[population_by_age_2010['age16-25']]['proportion'].sum()
+pop_prop_above_25 = population_by_age_2010[~population_by_age_2010['age16-25']]['proportion'].sum()
+
+crashes_by_age_grouped = get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_above_25)
 
 """
 Hypothesis 3: The number of collisions increased with an increase in population
@@ -388,6 +419,5 @@ plot_crashes_per_capita_vs_population_density(crashes_population_subset)
 Hypothesis 4: Crash locations are not random. The collisions are bound to specific areas 
             due to a badly planned network of roads/traffic signs.
 """
-crashes.loc[:, 'CRASH_MONTH'] = crashes['CRASH DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[0]))
-nyc_map_fig = plot_crash_locations(mapbox_access_token, crashes, 2014, 5)
-nyc_map_fig.show()
+crashes_per_zipcode, gj = set_up_crashes_for_map(crashes, Zipcode_geojson)
+plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj)
