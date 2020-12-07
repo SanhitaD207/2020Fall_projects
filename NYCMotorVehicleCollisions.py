@@ -388,6 +388,6 @@ plot_crashes_per_capita_vs_population_density(crashes_population_subset)
 Hypothesis 4: Crash locations are not random. The collisions are bound to specific areas 
             due to a badly planned network of roads/traffic signs.
 """
-crashes = crashes.loc[:, 'CRASH_MONTH'] = crashes['CRASH_DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[0]))
+crashes.loc[:, 'CRASH_MONTH'] = crashes['CRASH DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[0]))
 nyc_map_fig = plot_crash_locations(mapbox_access_token, crashes, 2014, 5)
 nyc_map_fig.show()
