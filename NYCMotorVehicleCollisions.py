@@ -35,6 +35,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
 
+
 NYC_collision_crashes_file = 'Motor_Vehicle_Collisions_-_Crashes.csv'
 NYC_collision_persons_file = 'Motor_Vehicle_Collisions_-_Person.csv'
 Population_by_age_2010 = 'population_by_age_2010.csv'
@@ -397,67 +398,68 @@ def plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj):
     fig.show()
 
 
-mapbox_access_token = 'pk.eyJ1IjoiYWdhcndhbGFkYXJzaCIsImEiOiJja2h5ZGYyd3UwZTN3MnFwYzM1YW9qNnFvIn0.SasVV15822weUxlZ3G0P8Q'
-crashes, persons = load_collision_data(NYC_collision_crashes_file, NYC_collision_persons_file)
-crashes.loc[:, 'CRASH_YEAR'] = crashes['CRASH DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[-1]))
+if __name__ == '__main__':
+    mapbox_access_token = 'pk.eyJ1IjoiYWdhcndhbGFkYXJzaCIsImEiOiJja2h5ZGYyd3UwZTN3MnFwYzM1YW9qNnFvIn0.SasVV15822weUxlZ3G0P8Q'
+    crashes, persons = load_collision_data(NYC_collision_crashes_file, NYC_collision_persons_file)
+    crashes.loc[:, 'CRASH_YEAR'] = crashes['CRASH DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[-1]))
 
-"""
-Hypothesis 1: Of all collisions occurring late in the night (between 12 am - 5 am), the majority are caused 
-            due to overspeeding.
-"""
-night_crash_data = get_night_crashes(crashes)
-night_crash_unsafe_speed_data = check_for_unsafe_speed(night_crash_data)
-percentage_unsafe_speed_collisions = calculate_percentage_of_speedy_collisions(night_crash_unsafe_speed_data)
-percentage_invalid_collision_data = calculate_invalid_collision_percentage(night_crash_data)
-print(percentage_invalid_collision_data)
+    """
+    Hypothesis 1: Of all collisions occurring late in the night (between 12 am - 5 am), the majority are caused 
+                due to overspeeding.
+    """
+    night_crash_data = get_night_crashes(crashes)
+    night_crash_unsafe_speed_data = check_for_unsafe_speed(night_crash_data)
+    percentage_unsafe_speed_collisions = calculate_percentage_of_speedy_collisions(night_crash_unsafe_speed_data)
+    percentage_invalid_collision_data = calculate_invalid_collision_percentage(night_crash_data)
+    print(percentage_invalid_collision_data)
 
-"""
-Hypothesis 2: Of all crashes, a majority number is caused by persons between the age of 16-25.
-"""
-crashes_persons = get_merged_crashes_persons(crashes, persons)
+    """
+    Hypothesis 2: Of all crashes, a majority number is caused by persons between the age of 16-25.
+    """
+    crashes_persons = get_merged_crashes_persons(crashes, persons)
 
-# dropping all rows where there is no vehicle ID present
-crashes_persons.drop(crashes_persons.loc[crashes_persons['VEHICLE_ID'].isna()].index, inplace=True)
-columns = ['CRASH_YEAR', 'PERSON_AGE']
-crashes_persons_age_grouping = get_crashes_persons_age_grouping_data(crashes_persons, columns)
-crashes_persons_age_grouping.loc[:, 'ageBelow16'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] < 16, True, False)
-crashes_persons_age_grouping.loc[:, 'ageAbove99'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] > 99, True, False)
+    # dropping all rows where there is no vehicle ID present
+    crashes_persons.drop(crashes_persons.loc[crashes_persons['VEHICLE_ID'].isna()].index, inplace=True)
+    columns = ['CRASH_YEAR', 'PERSON_AGE']
+    crashes_persons_age_grouping = get_crashes_persons_age_grouping_data(crashes_persons, columns)
+    crashes_persons_age_grouping.loc[:, 'ageBelow16'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] < 16, True, False)
+    crashes_persons_age_grouping.loc[:, 'ageAbove99'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] > 99, True, False)
 
-# Dropping all rows with age < 16, age > 99 and age Nan
-crashes_persons_age_grouping.drop(
-    crashes_persons_age_grouping.loc[(crashes_persons_age_grouping['ageBelow16']) |
-                                     (crashes_persons_age_grouping['ageAbove99']) |
-                                     (crashes_persons_age_grouping['PERSON_AGE'].isna())].index, inplace=True)
+    # Dropping all rows with age < 16, age > 99 and age Nan
+    crashes_persons_age_grouping.drop(
+        crashes_persons_age_grouping.loc[(crashes_persons_age_grouping['ageBelow16']) |
+                                         (crashes_persons_age_grouping['ageAbove99']) |
+                                         (crashes_persons_age_grouping['PERSON_AGE'].isna())].index, inplace=True)
 
-# Using the 2010 population by age demographics of NYC for getting the population proportions by age
-population_by_age_2010 = get_population_proportion_data(Population_by_age_2010)
+    # Using the 2010 population by age demographics of NYC for getting the population proportions by age
+    population_by_age_2010 = get_population_proportion_data(Population_by_age_2010)
 
-# Proportion of population for the age group 16-25
-pop_prop_16_25 = population_by_age_2010[population_by_age_2010['age16-25']]['proportion'].sum()
+    # Proportion of population for the age group 16-25
+    pop_prop_16_25 = population_by_age_2010[population_by_age_2010['age16-25']]['proportion'].sum()
 
-# Proportion of population for the age group 26-99
-ages = [str(i) for i in range(26, 100)]
-pop_prop_26_99 = population_by_age_2010[population_by_age_2010['age'].isin(ages)]['proportion'].sum()
+    # Proportion of population for the age group 26-99
+    ages = [str(i) for i in range(26, 100)]
+    pop_prop_26_99 = population_by_age_2010[population_by_age_2010['age'].isin(ages)]['proportion'].sum()
 
-crashes_by_age_grouped = get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_26_99)
+    crashes_by_year_age_grouped = get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_26_99)
+    plot_crashes_age_groups(crashes_by_year_age_grouped)
 
-"""
-Hypothesis 3: The number of collisions increased with an increase in population
-Source - https://worldpopulationreview.com/us-cities/new-york-city-ny-population
-"""
-NYC_Population = get_nyc_population_data()
-crashes_total = get_total_crashes_per_year(crashes)
-crashes_population = calculate_crashes_per_capita(crashes_total, NYC_Population)
-plot_crashes_per_capita_vs_year(crashes_population)
-plot_crashes_per_capita_vs_population_density(crashes_population)
+    """
+    Hypothesis 3: The number of collisions increased with an increase in population
+    Source - https://worldpopulationreview.com/us-cities/new-york-city-ny-population
+    """
+    NYC_Population = get_nyc_population_data()
+    crashes_total = get_total_crashes_per_year(crashes)
+    crashes_population = calculate_crashes_per_capita(crashes_total, NYC_Population)
+    plot_crashes_per_capita_vs_year(crashes_population)
+    plot_crashes_per_capita_vs_population_density(crashes_population)
 
-crashes_population_subset = crashes_population.drop([0, 8], 0)
-plot_crashes_per_capita_vs_year(crashes_population_subset)
-plot_crashes_per_capita_vs_population_density(crashes_population_subset)
+    crashes_population_subset = crashes_population.drop([0, 8], 0)
+    plot_crashes_per_capita_vs_year(crashes_population_subset)
+    plot_crashes_per_capita_vs_population_density(crashes_population_subset)
 
-"""
-Hypothesis 4: Crash locations are not random. The collisions are bound to specific areas 
-            due to a badly planned network of roads/traffic signs.
-"""
-crashes_per_zipcode, gj = set_up_crashes_for_map(crashes, Zipcode_geojson)
-plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj)
+    """
+    Additional Observations
+    """
+    crashes_per_zipcode, gj = set_up_crashes_for_map(crashes, Zipcode_geojson)
+    plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj)
