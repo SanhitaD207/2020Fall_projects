@@ -33,6 +33,7 @@ import geojson
 from datetime import datetime, time
 import matplotlib.pyplot as plt
 import plotly.express as px
+import plotly.graph_objects as go
 
 
 NYC_collision_crashes_file = 'Motor_Vehicle_Collisions_-_Crashes.csv'
@@ -192,36 +193,67 @@ def get_population_proportion_data(filename):
     :return: dataframe containing population proportion
     """
     population_by_age_2010 = pd.read_csv(filename)
-    population_by_age_2010.loc[:, 'age16-25'] = np.where((population_by_age_2010['Age'] > 15) &
-                                                         (population_by_age_2010['Age'] < 26), True, False)
-    population_by_age_2010.loc[:, 'proportion'] = population_by_age_2010['Population'] / population_by_age_2010['Population'].sum()
+    ages = [str(i) for i in range(16, 26)]
+    population_by_age_2010.loc[:, 'age16-25'] = np.where(population_by_age_2010['age'].isin(ages), True, False)
+    population_by_age_2010.loc[:, 'proportion'] = population_by_age_2010['population'] / population_by_age_2010['population'].sum()
     return population_by_age_2010
 
 
-def get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_above_25):
+def get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_26_99):
     """
     This function will be used to fetch a grouped dataframe containing normalized number of crashes for age groups
-        16-25 years and above 25 years. The normalization is done using the population proportions obtained from the
+        16-25 years and 26-99 years. The normalization is done using the population proportions obtained from the
         NYC population demographics by age dataset.
     :param crashes_persons_age_grouping: Merged crashes and persons dataframe
     :param pop_prop_16_25: population proportion factor for age group 16-25 years
-    :param pop_prop_above_25: population proportion factor for age group above years
+    :param pop_prop_26_99: population proportion factor for age group 26-99 years
     :return: grouped dataframe containing normalized number of crashes by age groups
     """
     crashes_by_year_age = crashes_persons_age_grouping.groupby(['CRASH_YEAR', 'PERSON_AGE']).size().reset_index()
     crashes_by_year_age = crashes_by_year_age.rename(columns={0: 'crashes'})
     crashes_by_year_age.loc[:, 'age_group'] = np.where((crashes_by_year_age['PERSON_AGE'] > 15) &
-                                                       (crashes_by_year_age['PERSON_AGE'] < 26), '16-25', '>25')
+                                                       (crashes_by_year_age['PERSON_AGE'] < 26), '16-25', '26-99')
 
     crashes_by_year_age_grouped = crashes_by_year_age.groupby(['CRASH_YEAR', 'age_group']).agg({'crashes': ['sum']}).reset_index()
     crashes_by_year_age_grouped.columns = crashes_by_year_age_grouped.columns.droplevel(1)
     crashes_by_year_age_grouped = crashes_by_year_age_grouped.pivot(index='CRASH_YEAR', columns='age_group', values='crashes')
+    crashes_by_year_age_grouped.loc[:, 'total'] = crashes_by_year_age_grouped['26-99'] + crashes_by_year_age_grouped['16-25']
     crashes_by_year_age_grouped.loc[:, 'norm_16-25'] = crashes_by_year_age_grouped['16-25'] / (
-            (crashes_by_year_age_grouped['16-25'].sum() + crashes_by_year_age_grouped['>25'].sum()) * pop_prop_16_25)
-    crashes_by_year_age_grouped.loc[:, 'norm_>25'] = crashes_by_year_age_grouped['>25'] / (
-            (crashes_by_year_age_grouped['16-25'].sum() + crashes_by_year_age_grouped['>25'].sum()) * pop_prop_above_25)
+            crashes_by_year_age_grouped['total'].sum() * pop_prop_16_25)
+    crashes_by_year_age_grouped.loc[:, 'norm_26-99'] = crashes_by_year_age_grouped['26-99'] / (
+            crashes_by_year_age_grouped['total'].sum() * pop_prop_26_99)
 
-    return crashes_by_year_age_grouped
+    return crashes_by_year_age_grouped.reset_index()
+
+
+def plot_crashes_age_groups(crashes_by_year_age_grouped):
+    """
+    This function is used to plot a line chart of the normalized number of crashes per year for age groups 16-25 and 26-99.
+    :param crashes_by_year_age_grouped: Grouped data containing normalized number of crashes for both age groups
+    """
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=crashes_by_year_age_grouped['CRASH_YEAR'].tolist(),
+        y=crashes_by_year_age_grouped['norm_16-25'].tolist(),
+        name="Normalized number of crashes for age group 16-25"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=crashes_by_year_age_grouped['CRASH_YEAR'].tolist(),
+        y=crashes_by_year_age_grouped['norm_26-99'].tolist(),
+        name="Normalized number of crashes for age group 26-99"
+    ))
+
+    fig.update_layout(
+        title="Plot of normalized number of crashes per year for age groups 16-25 and 26-99",
+        xaxis_title="Year",
+        yaxis_title="Normalized number of crashes",
+        legend_title="Legend"
+    )
+
+    fig.show()
 
 
 def get_nyc_population_data():
@@ -397,9 +429,12 @@ population_by_age_2010 = get_population_proportion_data(Population_by_age_2010)
 
 # Proportion of population for the age group 16-25
 pop_prop_16_25 = population_by_age_2010[population_by_age_2010['age16-25']]['proportion'].sum()
-pop_prop_above_25 = population_by_age_2010[~population_by_age_2010['age16-25']]['proportion'].sum()
 
-crashes_by_age_grouped = get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_above_25)
+# Proportion of population for the age group 26-99
+ages = [str(i) for i in range(26, 100)]
+pop_prop_26_99 = population_by_age_2010[population_by_age_2010['age'].isin(ages)]['proportion'].sum()
+
+crashes_by_age_grouped = get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_26_99)
 
 """
 Hypothesis 3: The number of collisions increased with an increase in population
