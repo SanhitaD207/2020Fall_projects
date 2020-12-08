@@ -28,6 +28,10 @@ inexperienced.
 
 ##### Results
 
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_capita_vs_pop_density.png?raw=true)
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_capita_vs_year.png?raw=true)
+
+
 #### Hypothesis - III
 
 The number of collisions increased with an increase in population density because more people will be driving on the
@@ -35,12 +39,8 @@ roads.
 
 ##### Results
 
-#### Hypothesis - IV
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_year_age_groups.png?raw=true)
 
-Crash locations are not random. The collisions are bound to specific areas due to a badly planned network of
-roads/traffic signs.
-
-##### Results
 
 ## Data Sources
 
@@ -48,6 +48,7 @@ roads/traffic signs.
 - https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95
 - https://worldpopulationreview.com/us-cities/new-york-city-ny-population
 - https://www1.nyc.gov/assets/planning/download/office/planning-level/nyc-population/census2010/totpop_singage_sex2010_boro.xlsx
+- https://data.beta.nyc/dataset/nyc-zip-code-tabulation-areas/resource/6df127b1-6d04-4bb7-b983-07402a2c3f90
 
 ## References
 
@@ -67,7 +68,8 @@ roads/traffic signs.
     - https://studio.mapbox.com/
     - https://plotly.com/python/scattermapbox/
     - https://data.beta.nyc/dataset/nyc-zip-code-tabulation-areas/resource/6df127b1-6d04-4bb7-b983-07402a2c3f90
-    - https://plotly.com/python/mapbox-county-choropleth/
+    - https://plotly.com/python/mapbox-county-choropleth/\
+    
 
 
 

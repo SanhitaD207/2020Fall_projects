@@ -35,6 +35,9 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
 
+# To remove pandas warnings - ref (https://stackoverflow.com/a/20627316)
+pd.options.mode.chained_assignment = None  # default='warn'
+
 
 NYC_collision_crashes_file = 'Motor_Vehicle_Collisions_-_Crashes.csv'
 NYC_collision_persons_file = 'Motor_Vehicle_Collisions_-_Person.csv'
@@ -400,8 +403,8 @@ def plot_crashes_per_capita_vs_population_density(crashes_population):
 
     plt.plot(crashes_population['Crashes_per_capita'], crashes_population['Population_Density'], color='red', marker='o')
     plt.title('Crashes_per_Capita Vs Population for NYC')
-    plt.xlabel('Population Density')
-    plt.ylabel('Crashes_per_capita')
+    plt.ylabel('Population Density')
+    plt.xlabel('Crashes_per_capita')
     plt.show()
 
 
