@@ -35,7 +35,6 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
 
-
 NYC_collision_crashes_file = 'Motor_Vehicle_Collisions_-_Crashes.csv'
 NYC_collision_persons_file = 'Motor_Vehicle_Collisions_-_Person.csv'
 Population_by_age_2010 = 'population_by_age_2010.csv'
@@ -128,16 +127,17 @@ def calculate_invalid_collision_percentage(night_crash_data):
 
     unwanted_contributing_factors = ['1', '80', 'Unspecified']
 
-    night_crash_data['isUnspecified'] = np.where((((night_crash_data['CONTRIBUTING FACTOR VEHICLE 1'].isin(unwanted_contributing_factors)) |
-                                                   (night_crash_data['CONTRIBUTING FACTOR VEHICLE 1'].isnull())) &
-                                                  ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 2'].isin(unwanted_contributing_factors)) |
-                                                   (night_crash_data['CONTRIBUTING FACTOR VEHICLE 2'].isnull())) &
-                                                  ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 3'].isin(unwanted_contributing_factors)) |
-                                                   (night_crash_data['CONTRIBUTING FACTOR VEHICLE 3'].isnull())) &
-                                                  ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 4'].isin(unwanted_contributing_factors)) |
-                                                   (night_crash_data['CONTRIBUTING FACTOR VEHICLE 4'].isnull())) &
-                                                  ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 5'].isin(unwanted_contributing_factors)) |
-                                                   (night_crash_data['CONTRIBUTING FACTOR VEHICLE 5'].isnull()))), True, False)
+    night_crash_data.loc[:, 'isUnspecified'] = np.where(
+        (((night_crash_data['CONTRIBUTING FACTOR VEHICLE 1'].isin(unwanted_contributing_factors)) |
+          (night_crash_data['CONTRIBUTING FACTOR VEHICLE 1'].isnull())) &
+         ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 2'].isin(unwanted_contributing_factors)) |
+          (night_crash_data['CONTRIBUTING FACTOR VEHICLE 2'].isnull())) &
+         ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 3'].isin(unwanted_contributing_factors)) |
+          (night_crash_data['CONTRIBUTING FACTOR VEHICLE 3'].isnull())) &
+         ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 4'].isin(unwanted_contributing_factors)) |
+          (night_crash_data['CONTRIBUTING FACTOR VEHICLE 4'].isnull())) &
+         ((night_crash_data['CONTRIBUTING FACTOR VEHICLE 5'].isin(unwanted_contributing_factors)) |
+          (night_crash_data['CONTRIBUTING FACTOR VEHICLE 5'].isnull()))), True, False)
 
     invalid_night_crash_data_metrics = night_crash_data['isUnspecified'].value_counts().to_frame()
 
@@ -195,7 +195,8 @@ def get_population_proportion_data(filename):
     population_by_age_2010 = pd.read_csv(filename)
     ages = [str(i) for i in range(16, 26)]
     population_by_age_2010.loc[:, 'age16-25'] = np.where(population_by_age_2010['age'].isin(ages), True, False)
-    population_by_age_2010.loc[:, 'proportion'] = population_by_age_2010['population'] / population_by_age_2010['population'].sum()
+    population_by_age_2010.loc[:, 'proportion'] = population_by_age_2010['population'] / population_by_age_2010[
+        'population'].sum()
     return population_by_age_2010
 
 
@@ -264,17 +265,20 @@ def get_nyc_population_data():
     Source - https://worldpopulationreview.com/us-cities/new-york-city-ny-population
 
     :return: dataframe containing the population and population density of NYC each year from 2012-2020
+    >>> nyc_data = get_nyc_population_data()
+    >>> nyc_data.iloc[0]['Population']
+    8348030.0
     """
 
     nyc_population_data = {'Year': [2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020],
-                           'Population': [8348030, 8398740, 8437390, 8468180, 8475980, 8438270, 8398750, 8361040, 8323340],
+                           'Population': [8348030, 8398740, 8437390, 8468180, 8475980, 8438270, 8398750, 8361040, 8323340]
                            }
 
     nyc_population = pd.DataFrame(nyc_population_data, columns=['Year', 'Population'])
 
     nyc_area = 300.4  # (in sq miles) Source - https://worldpopulationreview.com/us-cities/new-york-city-ny-population
 
-    nyc_population['Population_Density'] = nyc_population['Population'].apply(lambda x: x / nyc_area)
+    nyc_population.loc[:, 'Population_Density'] = nyc_population['Population'].apply(lambda x: x / nyc_area)
 
     return nyc_population
 
@@ -335,7 +339,8 @@ def plot_crashes_per_capita_vs_population_density(crashes_population):
     """
     This function is used to plot a line chart of the Crashes Per Capita versus NYC Population Density
 
-    :param crashes_population:
+    :param crashes_population: Merged dataframe containing total crashes data and population values and also the calculated
+        metric 'Crashes_per_capita'
     """
 
     plt.plot(crashes_population['Crashes_per_capita'], crashes_population['Population_Density'], color='red', marker='o')
@@ -379,7 +384,7 @@ def plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj):
     :param gj: Geojson containing zipcode level information for NYC
     """
 
-    fig = px.choropleth_mapbox(crashes_per_zipcode, geojson=gj, locations='zipcode', color='Total_Crashes_zipcode',
+    fig = px.choropleth_mapbox(crashes_per_zipcode, geojson=gj, locations='zipcode', color='crashes_per_zipcode',
                                color_continuous_scale="Viridis",
                                range_color=(0, 15000),
                                mapbox_style="carto-positron",
