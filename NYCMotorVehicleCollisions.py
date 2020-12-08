@@ -51,6 +51,11 @@ def load_collision_data(crashes_file, persons_file):
     :param crashes_file: File name for the crashes dataset
     :param persons_file: File name for the persons dataset
     :return: crashes and persons dataframes
+
+
+    >>> crashes, persons = load_collision_data('', '')
+    Traceback (most recent call last):
+    Exception: Please provide a valid file name
     """
 
     if not crashes_file or not persons_file:
@@ -70,6 +75,11 @@ def get_night_crashes(crashes):
 
     :param crashes: Dataframe containing the crashes data for NYC Motor Vehicle Collisions
     :return: Crashes between 12 am to 5 am
+
+    >>> crashes = pd.read_csv('doctest_dummy_files/crashes.csv')
+    >>> night_crash_data = get_night_crashes(crashes)
+    >>> night_crash_data.shape[0]
+    5
     """
 
     crashes['CRASH TIME'] = crashes['CRASH TIME'].apply(lambda x: datetime.strptime(x, "%H:%M").time())
@@ -87,6 +97,11 @@ def check_for_unsafe_speed(night_crash_data):
 
     :param night_crash_data: Data about all crashes happening between 12 am and 5 am
     :return: Updated crashes data with a flag column - 'hasUnsafeSpeed'
+
+    >>> crashes = pd.read_csv('doctest_dummy_files/crashes.csv')
+    >>> crashes = check_for_unsafe_speed(crashes)
+    >>> crashes['hasUnsafeSpeed'].value_counts().to_dict()
+    {False: 9, True: 1}
     """
 
     night_crash_data = night_crash_data.assign(hasUnsafeSpeed=False)
@@ -108,6 +123,11 @@ def calculate_percentage_of_speedy_collisions(night_crash_data):
 
     :param night_crash_data: Data about all crashes happening between 12 am and 5 am
     :return: Float value signifying the percentage of collisions caused due to over speeding
+
+    >>> crashes = pd.read_csv('doctest_dummy_files/crashes.csv')
+    >>> crashes = check_for_unsafe_speed(crashes)
+    >>> calculate_percentage_of_speedy_collisions(crashes)['hasUnsafeSpeed']
+    10.0
     """
 
     unsafe_speed_metrics = night_crash_data['hasUnsafeSpeed'].value_counts().to_frame()
@@ -124,6 +144,10 @@ def calculate_invalid_collision_percentage(night_crash_data):
 
     :param night_crash_data: Data about all crashes happening between 12 am and 5 am
     :return: Float value signifying the percentage of collisions with an invalid/missing contributing factor
+
+    >>> crashes = pd.read_csv('doctest_dummy_files/crashes.csv')
+    >>> calculate_invalid_collision_percentage(crashes)['isUnspecified']
+    20.0
     """
 
     unwanted_contributing_factors = ['1', '80', 'Unspecified']
@@ -157,6 +181,12 @@ def get_merged_crashes_persons(crashes, persons):
     :param persons: Dataframe containing the persons data for NYC Motor Vehicle Collisions
     :return: Merged dataframe containing the data of both crashes and persons. This will have more rows
         than the crashes dataframe.
+
+
+    >>> crashes, persons = load_collision_data('doctest_dummy_files/crashes.csv', 'doctest_dummy_files/persons.csv')
+    >>> crashes_persons = get_merged_crashes_persons(crashes, persons)
+    >>> crashes_persons.iloc[0]['COLLISION_ID']
+    3916262
     """
 
     crashes_persons = pd.merge(crashes, persons, left_on='COLLISION_ID', right_on='COLLISION_ID', how='inner')
@@ -177,6 +207,13 @@ def get_crashes_persons_age_grouping_data(crashes_persons, columns):
     :param crashes_persons: MMerged dataframe containing the data of both crashes and persons.
     :param columns: The list of columns to use
     :return: Grouped dataframe containing only the 'Driver' data
+
+
+    >>> crashes, persons = load_collision_data('doctest_dummy_files/crashes.csv', 'doctest_dummy_files/persons.csv')
+    >>> crashes_persons = get_merged_crashes_persons(crashes, persons)
+    >>> crashes_persons_age_grouping = get_crashes_persons_age_grouping_data(crashes_persons, ['CRASH_YEAR', 'PERSON_AGE'])
+    >>> crashes_persons_age_grouping.iloc[0]['PERSON_AGE']
+    16.0
     """
 
     crashes_persons_age_grouping = crashes_persons[crashes_persons['POSITION_IN_VEHICLE'] == 'Driver'][columns]
@@ -192,6 +229,10 @@ def get_population_proportion_data(filename):
         years of age.
     :param filename: Filename / Complete path to the population demographics by age data for NYC (present in repo)
     :return: dataframe containing population proportion
+
+    >>> pop_proportion = get_population_proportion_data('population_by_age_2010.csv')
+    >>> pop_proportion.iloc[16]['population']
+    102804
     """
     population_by_age_2010 = pd.read_csv(filename)
     ages = [str(i) for i in range(16, 26)]
@@ -291,6 +332,12 @@ def get_total_crashes_per_year(crashes):
 
     :param crashes: Dataframe containing the crashes data for NYC Motor Vehicle Collisions
     :return: Dataframe containing the total crashes occurred per year
+
+    >>> crashes = pd.read_csv('doctest_dummy_files/crashes.csv')
+    >>> crashes.loc[:, 'CRASH_YEAR'] = crashes['CRASH DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[-1]))
+    >>> total_crashes_per_year = get_total_crashes_per_year(crashes)
+    >>> total_crashes_per_year.iloc[0]['Total_Crashes']
+    10
     """
 
     crashes_data = crashes.copy()
@@ -312,6 +359,13 @@ def calculate_crashes_per_capita(crashes_total, nyc_population):
     :param nyc_population: Dataframe containing the NYC population per year
     :return: Merged dataframe containing total crashes data and population values and also the calculated
         metric 'Crashes_per_capita'
+
+
+    >>> total_crashes = pd.read_csv('doctest_dummy_files/crashes_total.csv')
+    >>> population = get_nyc_population_data()
+    >>> crashes_population = calculate_crashes_per_capita(total_crashes, population)
+    >>> round(crashes_population.iloc[0]['Crashes_per_capita'], 6)
+    0.012044
     """
 
     crashes_population = pd.merge(crashes_total, nyc_population, left_on='CRASH_YEAR', right_on='Year', how='inner')
@@ -358,6 +412,12 @@ def set_up_crashes_for_map(crashes, geojson_filename):
     :param crashes: Dataframe containing the crashes data for NYC Motor Vehicle Collisions
     :param geojson_filename: Filename/complete path to the zipcode.geojson file (present in repo)
     :return: crashes_per_zipcode dataframe and geojson
+
+
+    >>> crashes = pd.read_csv('doctest_dummy_files/crashes.csv')
+    >>> crashes_per_zipcode, gj = set_up_crashes_for_map(crashes, 'zipcode.geojson')
+    >>> gj['features'][0]['id']
+    '11372'
     """
 
     with open(geojson_filename) as f:

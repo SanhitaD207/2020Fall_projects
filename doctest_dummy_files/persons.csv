@@ -1,0 +1,11 @@
+﻿UNIQUE_ID,COLLISION_ID,CRASH_DATE,CRASH_TIME,PERSON_ID,PERSON_TYPE,PERSON_INJURY,VEHICLE_ID,PERSON_AGE,EJECTION,EMOTIONAL_STATUS,BODILY_INJURY,POSITION_IN_VEHICLE,SAFETY_EQUIPMENT,PED_LOCATION,PED_ACTION,COMPLAINT,PED_ROLE,CONTRIBUTING_FACTOR_1,CONTRIBUTING_FACTOR_2,PERSON_SEX
+10252788,3916262,10/25/2019,17:42,0278267c-0b21-470f-8a54-da71b7361448,Occupant,Unspecified,19142923,16,Not Ejected,Does Not Apply,Does Not Apply,Driver,Unknown,,,Does Not Apply,Passenger,,,F
+10253512,3916262,10/10/2019,19:45,81161123-516c-438d-8f29-a107d2783d85,Occupant,Unspecified,19143291,30,,,,Driver,,,,,Registrant,,,
+10250662,3916262,10/26/2019,10:40,b5da9aa6-3230-4203-bbde-3b6f9248ac31,Occupant,Injured,19141868,19,Not Ejected,Conscious,Entire Body,Driver,Unknown,,,Whiplash,Passenger,,,F
+10252894,4231115,10/26/2019,18:45,4ed210b6-678c-4fe3-ae8c-3ecd30eae7aa,Pedestrian,Injured,,19,,Conscious,Knee-Lower Leg Foot,Driver,None,Pedestrian/Bicyclist/Other Pedestrian at Intersection,Crossing Against Signal,Fracture - Distorted - Dislocation,Pedestrian,Pedestrian/Bicyclist/Other Pedestrian Error/Confusion,Texting,M
+6650180,3565527,11/21/2016,13:05,2782525,Occupant,Unspecified,,,,,,,,,,,Notified Person,,,
+10253241,4231281,10/25/2019,2:50,871840c9-fbae-4273-9b1f-c3bdbad27e1a,Occupant,Unspecified,19143162,29,,,,,,,,,Registrant,,,M
+10253976,4230620,10/16/2019,19:50,3983bcbc-dbd6-436f-a499-70189612dad7,Occupant,Unspecified,19143533,24,Not Ejected,Does Not Apply,Does Not Apply,Driver,Lap Belt,,,Does Not Apply,Driver,,,M
+10248673,4229711,10/26/2019,17:26,94ca70c0-e00b-4fdb-aa83-ab95cad020a3,Occupant,Unspecified,19140943,29,,,,,,,,,Registrant,,,M
+10254808,4230765,10/26/2019,9:55,ee4d1129-0424-4829-93aa-f23a87083fa2,Occupant,Unspecified,19143970,70,Not Ejected,Does Not Apply,Does Not Apply,"Middle front seat, or passenger lying across a seat",Lap Belt & Harness,,,Does Not Apply,Passenger,,,M
+10250614,4230210,10/26/2019,22:02,1117209b-e234-4605-b6c8-bb2edbeeb4dd,Occupant,Unspecified,19141846,48,,,,,,,,,Registrant,,,M
