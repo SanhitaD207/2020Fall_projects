@@ -21,16 +21,24 @@ because people driving at night tend to drive with unsafe speed.
 
 ##### Results
 
+Based on the calculations, we can see that only about 2.7% of the total number of collisions occurring late in the night
+are caused due to an unsafe vehicular speed. We did notice, around 34% of the night crash data had unspecified/invalid
+contributing factors for collision, a part of which could have contributed to the Unsafe speed subset. However, it is
+safe to say that the hypothesis has been proved false.
+
 #### Hypothesis - II
 
-More crashes are caused by the young inexperienced drivers (assuming 16-25 years of age) as compared to the 
-more experienced drivers (assuming ages 26-99)
-    
+More crashes are caused by the young inexperienced drivers (assuming 16-25 years of age) as compared to the more
+experienced drivers (assuming ages 26-99)
+
 ##### Results
 
-![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_capita_vs_year.png?raw=true)
-![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_pop_density_vs_year.png?raw=true)
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_year_age_group.png?raw=true)
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_normalized_crashes_per_100000people.png?raw=true)
 
+As seen in the normalized values above, for the year 2016, we can see for every 100,000 people in the age group 16-25,
+there were around 3245 people involved in collisions, whereas in the age group 26-99 the number is higher (4395). This
+number is consistently higher for the 26-99 age group, but the numbers for the 16-25 age group are almost comparable.
 
 #### Hypothesis - III
 
@@ -39,8 +47,13 @@ roads.
 
 ##### Results
 
-![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_year_age_group.png?raw=true)
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_capita_vs_year.png?raw=true)
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_pop_density_vs_year.png?raw=true)
 
+From the plots above, we can see that from 2013-2016 the population density was rising and so was the crashes per
+capita. However, from 2016-2018 the population density was decreasing, but the crashes per capita kept increasing.
+Hence, we can conclude that crashes per capita is not positively correlated with the population density, there could be
+other factors contributing to the number of crashes.
 
 ## Data Sources
 
