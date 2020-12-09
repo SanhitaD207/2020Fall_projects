@@ -17,19 +17,19 @@ We came up with a few scenarios that we wanted to verify with the help of the da
 
 During the night (12 am - 5 am) the streets are usually empty, and some traffic lights are also turned off. Also, there
 are lesser pedestrians around. So it could be possible that majority of the collisions occurring at night are caused
-because people driving at night tend to over-speed.
+because people driving at night tend to drive with unsafe speed.
 
 ##### Results
 
 #### Hypothesis - II
 
-Of all crashes, a majority number is caused by persons between the age of 16-25 because they are relatively
-inexperienced.
-
+More crashes are caused by the young inexperienced drivers (assuming 16-25 years of age) as compared to the 
+more experienced drivers (assuming ages 26-99)
+    
 ##### Results
 
-![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_capita_vs_pop_density.png?raw=true)
 ![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_capita_vs_year.png?raw=true)
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_pop_density_vs_year.png?raw=true)
 
 
 #### Hypothesis - III
