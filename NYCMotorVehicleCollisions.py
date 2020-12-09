@@ -5,27 +5,35 @@
 # Adarsh Agarwal (adarsha2@illinois.edu, github - agarwaladarsh)
 # Sanhita Dhamdhere (sanhita2@illinois.edu, github - Sanhita207)
 
-# References:
+"""
+References:
 
-# _Stack Overflow_ :
-#    - https://stackoverflow.com/questions/50375985/pandas-add-column-with-value-based-on-condition-based-on-other-columns
-#    - https://stackoverflow.com/questions/19384532/get-statistics-for-each-group-such-as-count-mean-etc-using-pandas-groupby
-#    - https://stackoverflow.com/questions/44111307/python-pandas-count-rows-based-on-column
-#    - https://stackoverflow.com/questions/47502891/removing-group-header-after-pandas-aggregation
-#    - https://stackoverflow.com/questions/14529838/apply-multiple-functions-to-multiple-groupby-columns
+Data Sources
+    - https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Person/f55k-p6yu
+    - https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Crashes/h9gi-nx95
+    - https://worldpopulationreview.com/us-cities/new-york-city-ny-population
+    - https://www1.nyc.gov/assets/planning/download/office/planning-level/nyc-population/census2010/totpop_singage_sex2010_boro.xlsx
+    - https://data.beta.nyc/dataset/nyc-zip-code-tabulation-areas/resource/6df127b1-6d04-4bb7-b983-07402a2c3f90
 
-# _Others_ :
-#    - https://www.kite.com/python/answers/how-to-select-rows-by-multiple-label-conditions-with-pandas-loc-in-python
-#    - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.astype.html
-#    - https://datatofish.com/line-chart-python-matplotlib/
-#    - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_values.html
-#    - https://github.com/rahulrohri/final_project_2020Sp
-#    - https://studio.mapbox.com/
-#    - https://plotly.com/python/scattermapbox/
-#    - https://data.beta.nyc/dataset/nyc-zip-code-tabulation-areas/resource/6df127b1-6d04-4bb7-b983-07402a2c3f90
-#    - https://plotly.com/python/mapbox-county-choropleth/
-#    - https://medium.com/@ingeh/markdown-for-jupyter-notebooks-cheatsheet-386c05aeebed
+_Stack Overflow_ :
+   - https://stackoverflow.com/questions/50375985/pandas-add-column-with-value-based-on-condition-based-on-other-columns
+   - https://stackoverflow.com/questions/19384532/get-statistics-for-each-group-such-as-count-mean-etc-using-pandas-groupby
+   - https://stackoverflow.com/questions/44111307/python-pandas-count-rows-based-on-column
+   - https://stackoverflow.com/questions/47502891/removing-group-header-after-pandas-aggregation
+   - https://stackoverflow.com/questions/14529838/apply-multiple-functions-to-multiple-groupby-columns
 
+_Others_ :
+   - https://www.kite.com/python/answers/how-to-select-rows-by-multiple-label-conditions-with-pandas-loc-in-python
+   - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.astype.html
+   - https://datatofish.com/line-chart-python-matplotlib/
+   - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_values.html
+   - https://github.com/rahulrohri/final_project_2020Sp
+   - https://studio.mapbox.com/
+   - https://plotly.com/python/scattermapbox/
+   - https://data.beta.nyc/dataset/nyc-zip-code-tabulation-areas/resource/6df127b1-6d04-4bb7-b983-07402a2c3f90
+   - https://plotly.com/python/mapbox-county-choropleth/
+   - https://medium.com/@ingeh/markdown-for-jupyter-notebooks-cheatsheet-386c05aeebed
+"""
 
 import pandas as pd
 import numpy as np
@@ -37,7 +45,6 @@ import plotly.graph_objects as go
 
 # To remove pandas warnings - ref (https://stackoverflow.com/a/20627316)
 pd.options.mode.chained_assignment = None  # default='warn'
-
 
 NYC_collision_crashes_file = 'Motor_Vehicle_Collisions_-_Crashes.csv'
 NYC_collision_persons_file = 'Motor_Vehicle_Collisions_-_Person.csv'
@@ -200,35 +207,37 @@ def get_merged_crashes_persons(crashes, persons):
     return crashes_persons
 
 
-def get_crashes_persons_age_grouping_data(crashes_persons, columns):
+def get_crashes_driver_age_groups(crashes_persons, columns):
     """
     This function is used to first filter the merged crashes_persons dataframe for rows involving only the
         driver. After that all rows where the age of the driver is between 16 - 25 years is flagged in the
-        'age16-25' column. This is done to identify what proportion of collisions involve
-        young inexperienced drivers between ages 16-25.
+        'age16-25' column and similarly all rows where age of the driver is between 26 - 99 years is flagged in the 'age26-99' column.
+        This is done to identify the proportion of collisions involving the two age groups.
 
-    :param crashes_persons: MMerged dataframe containing the data of both crashes and persons.
+    :param crashes_persons: Merged dataframe containing the data of both crashes and persons.
     :param columns: The list of columns to use
     :return: Grouped dataframe containing only the 'Driver' data
 
 
     >>> crashes, persons = load_collision_data('doctest_dummy_files/crashes.csv', 'doctest_dummy_files/persons.csv')
     >>> crashes_persons = get_merged_crashes_persons(crashes, persons)
-    >>> crashes_persons_age_grouping = get_crashes_persons_age_grouping_data(crashes_persons, ['CRASH_YEAR', 'PERSON_AGE'])
-    >>> crashes_persons_age_grouping.iloc[0]['PERSON_AGE']
+    >>> crashes_driver_age_group = get_crashes_driver_age_groups(crashes_persons, ['CRASH_YEAR', 'PERSON_AGE'])
+    >>> crashes_driver_age_group.iloc[0]['PERSON_AGE']
     16.0
     """
 
-    crashes_persons_age_grouping = crashes_persons[crashes_persons['POSITION_IN_VEHICLE'] == 'Driver'][columns]
-    crashes_persons_age_grouping.loc[:, 'age16-25'] = np.where((crashes_persons_age_grouping['PERSON_AGE'] > 15) &
-                                                               (crashes_persons_age_grouping['PERSON_AGE'] < 26), True, False)
-    return crashes_persons_age_grouping
+    crashes_driver_age_group = crashes_persons[crashes_persons['POSITION_IN_VEHICLE'] == 'Driver'][columns]
+    crashes_driver_age_group.loc[:, 'age16-25'] = np.where((crashes_driver_age_group['PERSON_AGE'] > 15) &
+                                                           (crashes_driver_age_group['PERSON_AGE'] < 26), True, False)
+    crashes_driver_age_group.loc[:, 'age26-99'] = np.where((crashes_driver_age_group['PERSON_AGE'] > 25) &
+                                                           (crashes_driver_age_group['PERSON_AGE'] < 100), True, False)
+    return crashes_driver_age_group
 
 
 def get_population_proportion_data(filename):
     """
     This function is used to fetch the population demographics by age for the year 2010. The 'proportion' field from this
-        data will be used later on to normalize the crashes data for the 2 age groups - 16-25 years and greater than 25
+        data will be used later on to normalize the crashes data for the 2 age groups - 16-25 years of age and 26-99
         years of age.
     :param filename: Filename / Complete path to the population demographics by age data for NYC (present in repo)
     :return: dataframe containing population proportion
@@ -238,44 +247,52 @@ def get_population_proportion_data(filename):
     102804
     """
     population_by_age_2010 = pd.read_csv(filename)
-    ages = [str(i) for i in range(16, 26)]
-    population_by_age_2010.loc[:, 'age16-25'] = np.where(population_by_age_2010['age'].isin(ages), True, False)
     population_by_age_2010.loc[:, 'proportion'] = population_by_age_2010['population'] / population_by_age_2010[
         'population'].sum()
     return population_by_age_2010
 
 
-def get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_26_99):
+def get_norm_crashes_groupedby_year_age_group(crashes_driver_age_groups, pop_prop_16_25, pop_prop_26_99):
     """
     This function will be used to fetch a grouped dataframe containing normalized number of crashes for age groups
-        16-25 years and 26-99 years. The normalization is done using the population proportions obtained from the
-        NYC population demographics by age dataset.
+        16-25 years and 26-99 years. The normalization is done using the populations obtained from the
+        NYC population demographics by age dataset and NYC population each year.
     :param crashes_persons_age_grouping: Merged crashes and persons dataframe
     :param pop_prop_16_25: population proportion factor for age group 16-25 years
     :param pop_prop_26_99: population proportion factor for age group 26-99 years
     :return: grouped dataframe containing normalized number of crashes by age groups
     """
-    crashes_by_year_age = crashes_persons_age_grouping.groupby(['CRASH_YEAR', 'PERSON_AGE']).size().reset_index()
-    crashes_by_year_age = crashes_by_year_age.rename(columns={0: 'crashes'})
-    crashes_by_year_age.loc[:, 'age_group'] = np.where((crashes_by_year_age['PERSON_AGE'] > 15) &
-                                                       (crashes_by_year_age['PERSON_AGE'] < 26), '16-25', '26-99')
 
-    crashes_by_year_age_grouped = crashes_by_year_age.groupby(['CRASH_YEAR', 'age_group']).agg({'crashes': ['sum']}).reset_index()
-    crashes_by_year_age_grouped.columns = crashes_by_year_age_grouped.columns.droplevel(1)
-    crashes_by_year_age_grouped = crashes_by_year_age_grouped.pivot(index='CRASH_YEAR', columns='age_group', values='crashes')
-    crashes_by_year_age_grouped.loc[:, 'total'] = crashes_by_year_age_grouped['26-99'] + crashes_by_year_age_grouped['16-25']
-    crashes_by_year_age_grouped.loc[:, 'norm_16-25'] = crashes_by_year_age_grouped['16-25'] / (
-            crashes_by_year_age_grouped['total'].sum() * pop_prop_16_25)
-    crashes_by_year_age_grouped.loc[:, 'norm_26-99'] = crashes_by_year_age_grouped['26-99'] / (
-            crashes_by_year_age_grouped['total'].sum() * pop_prop_26_99)
+    nyc_population = get_nyc_population_data()
 
-    return crashes_by_year_age_grouped.reset_index()
+    crashes_driver_age_groups = crashes_driver_age_groups.groupby(['CRASH_YEAR', 'PERSON_AGE']).size().reset_index()
+    crashes_driver_age_groups = crashes_driver_age_groups.rename(columns={0: 'crashes'})
+    crashes_driver_age_groups.loc[:, 'age_group'] = np.where((crashes_driver_age_groups['PERSON_AGE'] > 15) &
+                                                             (crashes_driver_age_groups['PERSON_AGE'] < 26), '16-25', '26-99')
+
+    crashes_driver_age_groups = crashes_driver_age_groups.groupby(['CRASH_YEAR', 'age_group']).agg(
+        {'crashes': ['sum']}).reset_index()
+    crashes_driver_age_groups.columns = crashes_driver_age_groups.columns.droplevel(1)
+    crashes_driver_age_groups = crashes_driver_age_groups.pivot(index='CRASH_YEAR', columns='age_group', values='crashes')
+
+    crashes_driver_age_groups = crashes_driver_age_groups.reset_index()
+
+    crashes_driver_age_groups['CRASH_YEAR'] = crashes_driver_age_groups['CRASH_YEAR'].astype('int64')
+
+    merged_df = pd.merge(crashes_driver_age_groups, nyc_population, left_on='CRASH_YEAR', right_on='Year', how='inner')
+
+    merged_df.loc[:, 'norm_16-25'] = (merged_df['16-25'] * 100000) / (merged_df['Population'] * pop_prop_16_25)
+    merged_df.loc[:, 'norm_26-99'] = (merged_df['26-99'] * 100000) / (merged_df['Population'] * pop_prop_26_99)
+
+    return merged_df
 
 
 def plot_crashes_age_groups(crashes_by_year_age_grouped):
     """
-    This function is used to plot a line chart of the normalized number of crashes per year for age groups 16-25 and 26-99.
-    :param crashes_by_year_age_grouped: Grouped data containing normalized number of crashes for both age groups
+    This function is used to plot a line chart of the normalized number of crashes per year for age groups 16-25 and 26-99 per
+    100,000 population.
+    :param crashes_by_year_age_grouped: Grouped data containing normalized number of crashes for both age groups per 100,000
+    population
     """
 
     fig = go.Figure()
@@ -283,20 +300,26 @@ def plot_crashes_age_groups(crashes_by_year_age_grouped):
     fig.add_trace(go.Scatter(
         x=crashes_by_year_age_grouped['CRASH_YEAR'].tolist(),
         y=crashes_by_year_age_grouped['norm_16-25'].tolist(),
-        name="Normalized number of crashes for age group 16-25"
+        name="Age group 16-25"
     ))
 
     fig.add_trace(go.Scatter(
         x=crashes_by_year_age_grouped['CRASH_YEAR'].tolist(),
         y=crashes_by_year_age_grouped['norm_26-99'].tolist(),
-        name="Normalized number of crashes for age group 26-99"
+        name="Age group 26-99"
     ))
 
     fig.update_layout(
-        title="Plot of normalized number of crashes per year for age groups 16-25 and 26-99",
+        title="Plot of normalized number of crashes per year for age groups 16-25 and 26-99 per 100,000 population",
         xaxis_title="Year",
-        yaxis_title="Normalized number of crashes",
-        legend_title="Legend"
+        yaxis_title="Normalized number of crashes per 100,000 population",
+        legend_title="Legend",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        )
     )
 
     fig.show()
@@ -440,7 +463,6 @@ def set_up_crashes_for_map(crashes, geojson_filename, year=0):
     return crashes_per_zipcode, gj
 
 
-
 def plot_crash_locations(crashes_per_zipcode, gj):
     """
     This function is used to plot the heat map of crashes in NYC. This function uses the python-plotly
@@ -467,8 +489,8 @@ if __name__ == '__main__':
     crashes.loc[:, 'CRASH_YEAR'] = crashes['CRASH DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[-1]))
 
     """
-    Hypothesis 1: Of all collisions occurring late in the night (between 12 am - 5 am), the majority are caused 
-                due to overspeeding.
+    Hypothesis 1: Of all collisions occurring late in the night (between 12 am - 5 am), the majority are caused due to an unsafe 
+    vehicle speed.
     """
     night_crash_data = get_night_crashes(crashes)
     night_crash_unsafe_speed_data = check_for_unsafe_speed(night_crash_data)
@@ -477,38 +499,41 @@ if __name__ == '__main__':
     print(percentage_invalid_collision_data)
 
     """
-    Hypothesis 2: Of all crashes, a majority number is caused by persons between the age of 16-25.
+    Hypothesis 2: More crashes are caused by the young inexperienced drivers (assuming 16-25 years of age) as compared to the 
+    more experienced drivers (assuming ages 26-99)
     """
     crashes_persons = get_merged_crashes_persons(crashes, persons)
 
     # dropping all rows where there is no vehicle ID present
     crashes_persons.drop(crashes_persons.loc[crashes_persons['VEHICLE_ID'].isna()].index, inplace=True)
     columns = ['CRASH_YEAR', 'PERSON_AGE']
-    crashes_persons_age_grouping = get_crashes_persons_age_grouping_data(crashes_persons, columns)
-    crashes_persons_age_grouping.loc[:, 'ageBelow16'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] < 16, True, False)
-    crashes_persons_age_grouping.loc[:, 'ageAbove99'] = np.where(crashes_persons_age_grouping['PERSON_AGE'] > 99, True, False)
+    crashes_driver_age_groups = get_crashes_driver_age_groups(crashes_persons, columns)
+    crashes_driver_age_groups.loc[:, 'ageBelow16'] = np.where(crashes_driver_age_groups['PERSON_AGE'] < 16, True, False)
+    crashes_driver_age_groups.loc[:, 'ageAbove99'] = np.where(crashes_driver_age_groups['PERSON_AGE'] > 99, True, False)
 
     # Dropping all rows with age < 16, age > 99 and age Nan
-    crashes_persons_age_grouping.drop(
-        crashes_persons_age_grouping.loc[(crashes_persons_age_grouping['ageBelow16']) |
-                                         (crashes_persons_age_grouping['ageAbove99']) |
-                                         (crashes_persons_age_grouping['PERSON_AGE'].isna())].index, inplace=True)
+    crashes_driver_age_groups.drop(
+        crashes_driver_age_groups.loc[(crashes_driver_age_groups['ageBelow16']) |
+                                      (crashes_driver_age_groups['ageAbove99']) |
+                                      (crashes_driver_age_groups['PERSON_AGE'].isna())].index, inplace=True)
 
     # Using the 2010 population by age demographics of NYC for getting the population proportions by age
-    population_by_age_2010 = get_population_proportion_data(Population_by_age_2010)
+    pop_prop_by_age_2010 = get_population_proportion_data(Population_by_age_2010)
 
     # Proportion of population for the age group 16-25
-    pop_prop_16_25 = population_by_age_2010[population_by_age_2010['age16-25']]['proportion'].sum()
+    ages = [str(i) for i in range(16, 26)]
+    pop_prop_16_25 = pop_prop_by_age_2010[pop_prop_by_age_2010['age'].isin(ages)]['proportion'].sum()
 
     # Proportion of population for the age group 26-99
     ages = [str(i) for i in range(26, 100)]
-    pop_prop_26_99 = population_by_age_2010[population_by_age_2010['age'].isin(ages)]['proportion'].sum()
+    pop_prop_26_99 = pop_prop_by_age_2010[pop_prop_by_age_2010['age'].isin(ages)]['proportion'].sum()
 
-    crashes_by_year_age_grouped = get_grouped_crashes_age_group_data(crashes_persons_age_grouping, pop_prop_16_25, pop_prop_26_99)
-    plot_crashes_age_groups(crashes_by_year_age_grouped)
+    norm_crashes_driver_age_groups = get_norm_crashes_groupedby_year_age_group(crashes_driver_age_groups, pop_prop_16_25,
+                                                                               pop_prop_26_99)
+    plot_crashes_age_groups(norm_crashes_driver_age_groups)
 
     """
-    Hypothesis 3: The number of collisions increased with an increase in population
+    Hypothesis 3: The number of collisions increase with an increase in population
     Source - https://worldpopulationreview.com/us-cities/new-york-city-ny-population
     """
     NYC_Population = get_nyc_population_data()
