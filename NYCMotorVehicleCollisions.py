@@ -393,27 +393,28 @@ def plot_crashes_per_capita_vs_year(crashes_population):
     plt.show()
 
 
-def plot_crashes_per_capita_vs_population_density(crashes_population):
+def plot_population_density_vs_year(crashes_population):
     """
-    This function is used to plot a line chart of the Crashes Per Capita versus NYC Population Density
+    This function is used to plot a line chart of the Pppulation Density over the years.
 
     :param crashes_population: Merged dataframe containing total crashes data and population values and also the calculated
         metric 'Crashes_per_capita'
     """
 
-    plt.plot(crashes_population['Crashes_per_capita'], crashes_population['Population_Density'], color='red', marker='o')
-    plt.title('Crashes_per_Capita Vs Population for NYC')
+    plt.plot(crashes_population['Year'], crashes_population['Population_Density'], color='red', marker='o')
+    plt.title('Population Density Vs Year for NYC')
+    plt.xlabel('Year')
     plt.ylabel('Population Density')
-    plt.xlabel('Crashes_per_capita')
     plt.show()
 
 
-def set_up_crashes_for_map(crashes, geojson_filename):
+def set_up_crashes_for_map(crashes, geojson_filename, year=0):
     """
     This function is used to setup the dataframes required to plot a heat map of all crashes in NYC. A geojson file is
         used and an additional 'id' key is added to allow plotly to link the dataframe and geojson together for the plot.
     :param crashes: Dataframe containing the crashes data for NYC Motor Vehicle Collisions
     :param geojson_filename: Filename/complete path to the zipcode.geojson file (present in repo)
+    :param year: Integer value for the year of collision
     :return: crashes_per_zipcode dataframe and geojson
 
 
@@ -423,46 +424,45 @@ def set_up_crashes_for_map(crashes, geojson_filename):
     '11372'
     """
 
+    if year == 0:
+        df = crashes
+    else:
+        df = crashes[crashes['CRASH_YEAR'] == year]
     with open(geojson_filename) as f:
         gj = geojson.load(f)
         for feature in gj['features']:
             zipcode = feature['properties']['postalCode']
             feature['id'] = zipcode
-
-    crashes_per_zipcode = crashes.groupby(['ZIP CODE'], sort=True).size().reset_index(name='crashes_per_zipcode')
+    crashes_per_zipcode = df.groupby(['ZIP CODE'], sort=True).size().reset_index(name='crashes_per_zipcode')
     crashes_per_zipcode = crashes_per_zipcode.rename(columns={'ZIP CODE': 'zipcode'})
     crashes_per_zipcode.drop(crashes_per_zipcode[(crashes_per_zipcode['zipcode'].isna()) |
                                                  (crashes_per_zipcode['zipcode'] == "     ")].index, inplace=True)
     return crashes_per_zipcode, gj
 
 
-def plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj):
+
+def plot_crash_locations(crashes_per_zipcode, gj):
     """
     This function is used to plot the heat map of crashes in NYC. This function uses the python-plotly
         library to plot a Chloropleth Map Box. A Mapbox access token is required, which can be fetched
         very easily from the Mapbox studio site (https://studio.mapbox.com/).
 
-    :param mapbox_access_token: A string token required by the python-plotly library to support interactive
-        maps within the plots.
     :param crashes_per_zipcode: Dataframe containing the crashes data for NYC Motor Vehicle Collisions per zipcode
     :param gj: Geojson containing zipcode level information for NYC
     """
 
     fig = px.choropleth_mapbox(crashes_per_zipcode, geojson=gj, locations='zipcode', color='crashes_per_zipcode',
                                color_continuous_scale="Viridis",
-                               range_color=(0, 15000),
+                               range_color=(0, 2500),
                                mapbox_style="carto-positron",
                                zoom=9, center={"lat": 40.74, "lon": -73.8},
                                opacity=0.5
                                )
-    fig.update_layout(mapbox_style="light",
-                      mapbox_accesstoken=mapbox_access_token,
-                      margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
     fig.show()
 
 
 if __name__ == '__main__':
-    mapbox_access_token = 'pk.eyJ1IjoiYWdhcndhbGFkYXJzaCIsImEiOiJja2h5ZGYyd3UwZTN3MnFwYzM1YW9qNnFvIn0.SasVV15822weUxlZ3G0P8Q'
     crashes, persons = load_collision_data(NYC_collision_crashes_file, NYC_collision_persons_file)
     crashes.loc[:, 'CRASH_YEAR'] = crashes['CRASH DATE'].astype(np.str_).apply(lambda x: int(x.split('/')[-1]))
 
@@ -515,14 +515,14 @@ if __name__ == '__main__':
     crashes_total = get_total_crashes_per_year(crashes)
     crashes_population = calculate_crashes_per_capita(crashes_total, NYC_Population)
     plot_crashes_per_capita_vs_year(crashes_population)
-    plot_crashes_per_capita_vs_population_density(crashes_population)
+    plot_population_density_vs_year(crashes_population)
 
     crashes_population_subset = crashes_population.drop([0, 8], 0)
     plot_crashes_per_capita_vs_year(crashes_population_subset)
-    plot_crashes_per_capita_vs_population_density(crashes_population_subset)
+    plot_population_density_vs_year(crashes_population_subset)
 
     """
     Additional Observations
     """
-    crashes_per_zipcode, gj = set_up_crashes_for_map(crashes, Zipcode_geojson)
-    plot_crash_locations(mapbox_access_token, crashes_per_zipcode, gj)
+    crashes_per_zipcode, gj = set_up_crashes_for_map(crashes, Zipcode_geojson, 2015)
+    plot_crash_locations(crashes_per_zipcode, gj)
