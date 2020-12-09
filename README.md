@@ -39,7 +39,7 @@ roads.
 
 ##### Results
 
-![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_year_age_groups.png?raw=true)
+![plot](https://github.com/SanhitaD207/2020Fall_projects/blob/main/images/NYC_crashes_per_year_age_group.png?raw=true)
 
 
 ## Data Sources
