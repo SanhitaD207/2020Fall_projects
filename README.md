@@ -55,6 +55,19 @@ capita. However, from 2016-2018 the population density was decreasing, but the c
 Hence, we can conclude that crashes per capita is not positively correlated with the population density, there could be
 other factors contributing to the number of crashes.
 
+## Files
+
+- NYCMotorVehicleCollisions.py - Python file containing all the code with doctests
+- NYCMotorVehicleCollisions.ipynb - Jupyter Notebook file (Please view the notebook on
+  this [URL](https://nbviewer.jupyter.org/github/SanhitaD207/2020Fall_projects/blob/main/NYCMotorVehicleCollisions.ipynb)
+  instead. This is because the plotly charts contain javascript code which is not rendered on when viewing the notebook
+  on GitHub). This URL points to the NBViewer offered by the Jupyter org.
+
+- population_by_age_2010.csv - CSV file containing data about the 2010 NYC population demographics
+- zipcode.geojson - Geojson file containing the shape data for each zipcode of NYC
+- doctest_dummy_files - Folder containing dummy CSV files for the doctests in the codebase
+- images - Contains PNG files for images for the readme
+
 ## Data Sources
 
 - https://data.cityofnewyork.us/Public-Safety/Motor-Vehicle-Collisions-Person/f55k-p6yu
